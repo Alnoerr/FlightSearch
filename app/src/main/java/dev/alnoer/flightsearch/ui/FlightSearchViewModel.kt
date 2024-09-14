@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.room.Query
 import dev.alnoer.flightsearch.FlightSearchApplication
 import dev.alnoer.flightsearch.data.Airport
 import dev.alnoer.flightsearch.data.Favorite
@@ -24,9 +25,7 @@ import kotlinx.coroutines.launch
 data class FlightSearchUiState(
     val textFieldValue: TextFieldValue = TextFieldValue(),
     val isShowingSuggestions: Boolean = false,
-    val suggestionsList: List<Airport> = emptyList(),
-    val flightsList: List<Airport> = emptyList(),
-    val favoritesList: List<Favorite> = emptyList()
+    val currentAirport: Airport? = null
 )
 
 class FlightSearchViewModel(
@@ -44,38 +43,56 @@ class FlightSearchViewModel(
                     textFieldValue = TextFieldValue(
                         text = searchQuery,
                         selection = TextRange(searchQuery.length)
-                    )
+                    ),
+                    currentAirport = flightSearchRepository.getAirportFromIataCode(searchQuery).first()
                 )
             }
         }
     }
 
     fun setSearchText(textFieldValue: TextFieldValue) {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isShowingSuggestions = true,
-                    textFieldValue = textFieldValue,
-                    suggestionsList = flightSearchRepository.getFlightSuggestionsStream(
-                        textFieldValue.text
-                    ).first()
-                )
-            }
+        _uiState.update {
+            it.copy(
+                isShowingSuggestions = true,
+                textFieldValue = textFieldValue
+            )
         }
     }
 
     fun search() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isShowingSuggestions = false,
-                    flightsList = flightSearchRepository.getFlightsStream(
-                        uiState.value.textFieldValue.text
-                    ).first()
-                )
-            }
+        _uiState.update {
+            it.copy(
+                isShowingSuggestions = false
+            )
         }
     }
+
+    fun autocomplete(airport: Airport) {
+        _uiState.update {
+            it.copy(
+                isShowingSuggestions = false,
+                textFieldValue = TextFieldValue(
+                    text = airport.iataCode,
+                    selection = TextRange(airport.iataCode.length)
+                ),
+                currentAirport = airport
+            )
+        }
+        viewModelScope.launch {
+            userPreferencesRepository.saveSearchQuery(airport.iataCode)
+        }
+    }
+
+    fun getFavorites(): Flow<List<Favorite>> = flightSearchRepository.getFavoritesStream()
+
+    fun getSuggestions(searchQuery: String): Flow<List<Airport>> =
+        flightSearchRepository.getFlightSuggestionsStream(searchQuery)
+
+    fun getAllFlights(): Flow<List<Airport>> =
+        flightSearchRepository.getAllFlightsStream()
+
+    fun getAirportFromIataCode(iataCode: String) =
+        flightSearchRepository.getAirportFromIataCode(iataCode)
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {

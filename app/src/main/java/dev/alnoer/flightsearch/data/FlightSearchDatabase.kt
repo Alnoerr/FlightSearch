@@ -17,7 +17,7 @@ abstract class FlightSearchDatabase: RoomDatabase() {
             // if the Instance is not null, return it, otherwise create a new database instance.
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, FlightSearchDatabase::class.java, "flight_search")
-                    .createFromAsset("flight_search.db")
+                    .createFromAsset("databases/flight_search.db")
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }

@@ -1,12 +1,15 @@
 package dev.alnoer.flightsearch.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +17,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -22,6 +27,8 @@ import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -38,7 +45,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dev.alnoer.flightsearch.R
 import dev.alnoer.flightsearch.data.Airport
+import dev.alnoer.flightsearch.data.Favorite
 import dev.alnoer.flightsearch.ui.theme.FlightSearchTheme
+import kotlinx.coroutines.flow.first
 
 enum class FlightSearchApp {
     HomeScreen,
@@ -50,20 +59,23 @@ fun FlightSearchApp(
     viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.Factory)
 ) {
     val navController = rememberNavController()
-    val uiState = viewModel.uiState.collectAsState().value
 
     Scaffold { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = FlightSearchApp.HomeScreen.name,
-            modifier = Modifier.padding(innerPadding)
         ) {
             composable(FlightSearchApp.HomeScreen.name) {
                 HomeScreen(
-                    uiState = uiState,
+                    viewModel = viewModel,
                     onValueChange = viewModel::setSearchText,
                     onSearch = viewModel::search,
-                    modifier = Modifier.fillMaxSize()
+                    onSuggestionClick = viewModel::autocomplete,
+                    onFlightClick = {  },
+                    onFavoriteClick = {  },
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
                 )
             }
 
@@ -80,11 +92,22 @@ fun FlightSearchApp(
 
 @Composable
 fun HomeScreen(
-    uiState: FlightSearchUiState,
+    viewModel: FlightSearchViewModel,
     onValueChange: (TextFieldValue) -> Unit,
     onSearch: () -> Unit,
+    onSuggestionClick: (Airport) -> Unit,
+    onFlightClick: (Airport) -> Unit,
+    onFavoriteClick: (Favorite) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val uiState = viewModel.uiState.collectAsState().value
+
+    val favoritesList = viewModel.getFavorites().collectAsState(emptyList()).value
+    val allFlightsList = viewModel.getAllFlights().collectAsState(emptyList()).value
+    val suggestionsList = viewModel.getSuggestions(uiState.textFieldValue.text).collectAsState(
+        emptyList()
+    ).value
+
     Column(modifier = modifier) {
         OutlinedTextField(
             value = uiState.textFieldValue,
@@ -110,19 +133,49 @@ fun HomeScreen(
         )
         AnimatedVisibility(uiState.textFieldValue.text.isEmpty()) {
             LazyColumn {
-                // Favorites
+                items(favoritesList) {
+//                    Flight(
+//                        from = viewModel.getAirportFromIataCode(it.departureCode).first(),
+//                        to = viewModel.getAirportFromIataCode(it.destinationCode).first(),
+//                        onClick = { onFavoriteClick(it) },
+//                        isFavorite = true
+//                    )
+                }
             }
         }
         AnimatedVisibility(uiState.isShowingSuggestions) {
             LazyColumn {
-                items(uiState.suggestionsList) {
-                    Suggestion(it)
+                items(
+                    items = suggestionsList,
+                    key = { it.id }
+                ) {
+                    Suggestion(
+                        airport = it,
+                        onClick = { onSuggestionClick(it) }
+                    )
                 }
             }
         }
         AnimatedVisibility(!uiState.isShowingSuggestions) {
-            LazyColumn {
-                // Results
+            LazyColumn(
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                if (uiState.currentAirport != null) {
+                    items(
+                        items = allFlightsList,
+                        key = { it.id }
+                    ) {
+                        if (uiState.currentAirport != it) {
+                            Flight(
+                                from = uiState.currentAirport,
+                                to = it,
+                                onClick = { onFlightClick(it) },
+                                isFavorite = false,
+                                modifier = Modifier.padding(4.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -131,9 +184,14 @@ fun HomeScreen(
 @Composable
 fun Suggestion(
     airport: Airport,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.padding(8.dp)) {
+    Row(
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onClick() }
+    ) {
         Text(
             text = airport.iataCode,
             fontWeight = FontWeight.Bold
@@ -147,15 +205,101 @@ fun Suggestion(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-private fun HomeScreenPreview() {
+fun Flight(
+    from: Airport,
+    to: Airport,
+    onClick: () -> Unit,
+    isFavorite: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Row(modifier = Modifier.padding(8.dp)) {
+            Column(modifier = Modifier.weight(1.0f)) {
+                FlightPoint(
+                    isDepart = true,
+                    airport = from
+                )
+                FlightPoint(
+                    isDepart = false,
+                    airport = to
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = stringResource(R.string.favorite),
+                tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.Gray,
+                modifier = Modifier
+                    .size(32.dp)
+                    .align(
+                        alignment = Alignment.CenterVertically
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+private fun FlightPoint(
+    isDepart: Boolean,
+    airport: Airport,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = if (isDepart) stringResource(R.string.depart) else stringResource(R.string.arrive),
+            color = Color.Gray
+        )
+        Row {
+            Text(
+                text = airport.iataCode,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(
+                modifier = Modifier.padding(end = 4.dp)
+            )
+            Text(
+                text = airport.name,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun FlightPreview() {
     FlightSearchTheme {
-        HomeScreen(
-            uiState = FlightSearchUiState(),
-            onValueChange = {},
-            onSearch = {},
-            modifier = Modifier.fillMaxSize()
+        Flight(
+            from = Airport(
+                id = 1,
+                name = "Name1",
+                iataCode = "SVO1",
+                passengers = 122
+            ),
+            to = Airport(
+                id = 1,
+                name = "Name2",
+                iataCode = "SVO2",
+                passengers = 122
+            ),
+            onClick = {},
+            isFavorite = true
         )
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//private fun HomeScreenPreview() {
+//    FlightSearchTheme {
+//        HomeScreen(,
+//            onValueChange = {},
+//            onSearch = {},
+//            modifier = Modifier.fillMaxSize()
+//        )
+//    }
+//}
