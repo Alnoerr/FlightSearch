@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -232,17 +233,20 @@ fun FlightCard(
                     airport = flight.destinationAirport
                 )
             }
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = stringResource(R.string.favorite),
-                tint = if (flight.isFavorite) MaterialTheme.colorScheme.primary else Color.Gray,
+            IconButton(
+                onClick = { onFavoriteClick(flight) },
                 modifier = Modifier
-                    .size(32.dp)
                     .align(
                         alignment = Alignment.CenterVertically
                     )
-                    .clickable { onFavoriteClick(flight) }
-            )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = stringResource(R.string.favorite),
+                    tint = if (flight.isFavorite) MaterialTheme.colorScheme.primary else Color.Gray,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
