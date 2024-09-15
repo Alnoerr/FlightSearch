@@ -13,8 +13,10 @@ import androidx.room.Query
 import dev.alnoer.flightsearch.FlightSearchApplication
 import dev.alnoer.flightsearch.data.Airport
 import dev.alnoer.flightsearch.data.Favorite
+import dev.alnoer.flightsearch.data.Flight
 import dev.alnoer.flightsearch.data.FlightSearchRepository
 import dev.alnoer.flightsearch.data.UserPreferencesRepository
+import dev.alnoer.flightsearch.data.toFavorite
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -93,6 +95,18 @@ class FlightSearchViewModel(
 
     fun getAirportFromIataCode(iataCode: String) =
         flightSearchRepository.getAirportFromIataCode(iataCode)
+
+    fun addFavorite(flight: Flight) {
+        viewModelScope.launch {
+            flightSearchRepository.addFavorite(flight.toFavorite())
+        }
+    }
+
+    fun removeFavorite(flight: Flight) {
+        viewModelScope.launch {
+            flightSearchRepository.removeFavorite(flight.toFavorite())
+        }
+    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
