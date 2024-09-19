@@ -62,19 +62,23 @@ fun FlightSearchApp(
             startDestination = FlightSearchApp.HomeScreen.name,
         ) {
             composable(FlightSearchApp.HomeScreen.name) {
+                val uiState = viewModel.uiState.collectAsState().value
+
+                val allFlightsList = viewModel.allFlightsList.collectAsState().value
+                val suggestionsList = viewModel.suggestionsList.collectAsState().value
+                val favoritesList = viewModel.favoritesList.collectAsState().value
+
                 HomeScreen(
-                    viewModel = viewModel,
                     onValueChange = viewModel::setSearchText,
                     onSearch = viewModel::search,
                     onSuggestionClick = viewModel::autocomplete,
                     onFlightClick = {  },
-                    onFavoriteClick = {
-                        if (it.isFavorite) {
-                            viewModel.removeFavorite(it)
-                        } else {
-                            viewModel.addFavorite(it)
-                        }
-                    },
+                    onAddFavoriteClick = viewModel::addFavorite,
+                    onRemoveFavoriteClick = viewModel::removeFavorite,
+                    uiState = uiState,
+                    allFlightsList = allFlightsList,
+                    suggestionsList = suggestionsList,
+                    favoritesList = favoritesList,
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize()
@@ -94,22 +98,18 @@ fun FlightSearchApp(
 
 @Composable
 fun HomeScreen(
-    viewModel: FlightSearchViewModel,
     onValueChange: (TextFieldValue) -> Unit,
     onSearch: () -> Unit,
     onSuggestionClick: (Airport) -> Unit,
     onFlightClick: (Flight) -> Unit,
-    onFavoriteClick: (Flight) -> Unit,
+    onAddFavoriteClick: (Flight) -> Unit,
+    onRemoveFavoriteClick: (Flight) -> Unit,
+    uiState: FlightSearchUiState,
+    allFlightsList: List<Airport>,
+    suggestionsList: List<Airport>,
+    favoritesList: List<Flight>,
     modifier: Modifier = Modifier
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
-
-    val favoritesList = viewModel.getFavorites().collectAsState(emptyList()).value
-    val allFlightsList = viewModel.getAllFlights().collectAsState(emptyList()).value
-    val suggestionsList = viewModel.getSuggestions(uiState.textFieldValue.text).collectAsState(
-        emptyList()
-    ).value
-
     Column(modifier = modifier) {
         OutlinedTextField(
             value = uiState.textFieldValue,
@@ -134,14 +134,16 @@ fun HomeScreen(
                 .fillMaxWidth()
         )
         AnimatedVisibility(uiState.textFieldValue.text.isEmpty()) {
-            LazyColumn {
+            LazyColumn(
+                contentPadding = PaddingValues(8.dp)
+            ) {
                 items(favoritesList) {
-//                    FlightCard(
-//                        from = viewModel.getAirportFromIataCode(it.departureCode).first(),
-//                        to = viewModel.getAirportFromIataCode(it.destinationCode).first(),
-//                        onClick = { onFavoriteClick(it) },
-//                        isFavorite = true
-//                    )
+                    FlightCard(
+                        flight = it,
+                        onClick = {},
+                        onFavoriteClick = onRemoveFavoriteClick,
+                        modifier = Modifier.padding(4.dp)
+                    )
                 }
             }
         }
@@ -176,7 +178,7 @@ fun HomeScreen(
                             FlightCard(
                                 flight = flight,
                                 onClick = { onFlightClick(flight) },
-                                onFavoriteClick = onFavoriteClick,
+                                onFavoriteClick = onAddFavoriteClick,
                                 modifier = Modifier.padding(4.dp)
                             )
                         }

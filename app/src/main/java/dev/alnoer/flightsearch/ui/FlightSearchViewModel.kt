@@ -1,6 +1,5 @@
 package dev.alnoer.flightsearch.ui
 
-import android.provider.SearchRecentSuggestions
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -9,18 +8,19 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.room.Query
 import dev.alnoer.flightsearch.FlightSearchApplication
 import dev.alnoer.flightsearch.data.Airport
-import dev.alnoer.flightsearch.data.Favorite
 import dev.alnoer.flightsearch.data.Flight
 import dev.alnoer.flightsearch.data.FlightSearchRepository
 import dev.alnoer.flightsearch.data.UserPreferencesRepository
 import dev.alnoer.flightsearch.data.toFavorite
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -37,6 +37,21 @@ class FlightSearchViewModel(
     private val _uiState = MutableStateFlow(FlightSearchUiState())
     val uiState = _uiState.asStateFlow()
 
+    val favoritesList: StateFlow<List<Flight>> =
+        flightSearchRepository.getFavoritesStream().map { favoritesList ->
+            favoritesList.map { favorite ->
+                Flight(
+                    departureAirport = flightSearchRepository.getAirportFromIataCode(favorite.departureCode).first(),
+                    destinationAirport = flightSearchRepository.getAirportFromIataCode(favorite.destinationCode).first(),
+                    isFavorite = true
+                )
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
     init {
         viewModelScope.launch {
             _uiState.update {
@@ -46,11 +61,26 @@ class FlightSearchViewModel(
                         text = searchQuery,
                         selection = TextRange(searchQuery.length)
                     ),
-                    currentAirport = flightSearchRepository.getAirportFromIataCode(searchQuery).first()
+                    currentAirport = flightSearchRepository.getAirportFromIataCode(searchQuery).first(),
                 )
             }
         }
     }
+
+    val allFlightsList: StateFlow<List<Airport>> = flightSearchRepository.getAllFlightsStream()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    val suggestionsList: StateFlow<List<Airport>> =
+        flightSearchRepository.getFlightSuggestionsStream(uiState.value.textFieldValue.text)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
     fun setSearchText(textFieldValue: TextFieldValue) {
         _uiState.update {
@@ -84,17 +114,6 @@ class FlightSearchViewModel(
             userPreferencesRepository.saveSearchQuery(airport.iataCode)
         }
     }
-
-    fun getFavorites(): Flow<List<Favorite>> = flightSearchRepository.getFavoritesStream()
-
-    fun getSuggestions(searchQuery: String): Flow<List<Airport>> =
-        flightSearchRepository.getFlightSuggestionsStream(searchQuery)
-
-    fun getAllFlights(): Flow<List<Airport>> =
-        flightSearchRepository.getAllFlightsStream()
-
-    fun getAirportFromIataCode(iataCode: String) =
-        flightSearchRepository.getAirportFromIataCode(iataCode)
 
     fun addFavorite(flight: Flight) {
         viewModelScope.launch {

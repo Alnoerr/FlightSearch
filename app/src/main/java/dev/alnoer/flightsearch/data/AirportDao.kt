@@ -7,7 +7,7 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface FlightSearchDao {
+interface AirportDao {
     @Query("SELECT * FROM airport WHERE iata_code LIKE '%' || :searchQuery || '%' OR name LIKE '%' || :searchQuery || '%'")
     fun getFlightSuggestions(searchQuery: String): Flow<List<Airport>>
 
@@ -16,13 +16,4 @@ interface FlightSearchDao {
 
     @Query("SELECT * FROM airport WHERE iata_code = :iataCode")
     fun getAirportFromIataCode(iataCode: String): Flow<Airport>
-
-    @Query("SELECT * FROM favorite")
-    fun getFavorites(): Flow<List<Favorite>>
-
-    @Insert
-    suspend fun addFavorite(favorite: Favorite)
-
-    @Delete
-    suspend fun removeFavorite(favorite: Favorite)
 }
