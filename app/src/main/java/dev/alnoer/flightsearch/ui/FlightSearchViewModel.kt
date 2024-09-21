@@ -74,14 +74,6 @@ class FlightSearchViewModel(
             initialValue = emptyList()
         )
 
-    val suggestionsList: StateFlow<List<Airport>> =
-        flightSearchRepository.getFlightSuggestionsStream(uiState.value.textFieldValue.text)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
-
     fun setSearchText(textFieldValue: TextFieldValue) {
         _uiState.update {
             it.copy(
@@ -114,6 +106,9 @@ class FlightSearchViewModel(
             userPreferencesRepository.saveSearchQuery(airport.iataCode)
         }
     }
+
+    fun getSuggestions(searchQuery: String) =
+        flightSearchRepository.getFlightSuggestionsStream(searchQuery)
 
     fun addFavorite(flight: Flight) {
         viewModelScope.launch {

@@ -65,7 +65,10 @@ fun FlightSearchApp(
                 val uiState = viewModel.uiState.collectAsState().value
 
                 val allFlightsList = viewModel.allFlightsList.collectAsState().value
-                val suggestionsList = viewModel.suggestionsList.collectAsState().value
+                val suggestionsList =
+                    viewModel.getSuggestions(uiState.textFieldValue.text).collectAsState(
+                        emptyList()
+                    ).value
                 val favoritesList = viewModel.favoritesList.collectAsState().value
 
                 HomeScreen(
