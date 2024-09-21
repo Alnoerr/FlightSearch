@@ -19,5 +19,6 @@ class OfflineFlightSearchRepository(
 
     override suspend fun addFavorite(favorite: Favorite) = favoriteDao.addFavorite(favorite)
 
-    override suspend fun removeFavorite(favorite: Favorite) = favoriteDao.removeFavorite(favorite)
+    override suspend fun removeFavorite(departureCode: String, destinationCode: String) =
+        favoriteDao.removeFavorite(departureCode, destinationCode)
 }

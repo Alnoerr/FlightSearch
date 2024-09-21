@@ -8,5 +8,5 @@ interface FlightSearchRepository {
     fun getAirportFromIataCode(iataCode: String) : Flow<Airport>
     fun getFavoritesStream(): Flow<List<Favorite>>
     suspend fun addFavorite(favorite: Favorite)
-    suspend fun removeFavorite(favorite: Favorite)
+    suspend fun removeFavorite(departureCode: String, destinationCode: String)
 }

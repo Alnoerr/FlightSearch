@@ -1,7 +1,6 @@
 package dev.alnoer.flightsearch.data
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +13,6 @@ interface FavoriteDao {
     @Insert
     suspend fun addFavorite(favorite: Favorite)
 
-    @Delete
-    suspend fun removeFavorite(favorite: Favorite)
+    @Query("DELETE FROM favorite WHERE departure_code = :departureCode AND destination_code = :destinationCode")
+    suspend fun removeFavorite(departureCode: String, destinationCode: String)
 }

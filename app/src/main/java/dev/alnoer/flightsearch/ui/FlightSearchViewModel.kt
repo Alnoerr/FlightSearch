@@ -118,7 +118,10 @@ class FlightSearchViewModel(
 
     fun removeFavorite(flight: Flight) {
         viewModelScope.launch {
-            flightSearchRepository.removeFavorite(flight.toFavorite())
+            flightSearchRepository.removeFavorite(
+                flight.departureAirport.iataCode,
+                flight.destinationAirport.iataCode
+            )
         }
     }
 

@@ -176,7 +176,13 @@ fun HomeScreen(
                             val flight = Flight(
                                 departureAirport = uiState.currentAirport,
                                 destinationAirport = it,
-                                isFavorite = false
+                                isFavorite = favoritesList.contains(
+                                    Flight(
+                                        departureAirport = uiState.currentAirport,
+                                        destinationAirport = it,
+                                        isFavorite = true
+                                    )
+                                )
                             )
                             FlightCard(
                                 flight = flight,
