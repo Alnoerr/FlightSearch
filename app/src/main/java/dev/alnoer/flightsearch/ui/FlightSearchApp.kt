@@ -30,11 +30,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,10 +54,13 @@ import dev.alnoer.flightsearch.data.Flight
 fun FlightSearchApp(
     viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.Factory)
 ) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
-            FlightSearchTopAppBar()
-        }
+            FlightSearchTopAppBar(scrollBehavior)
+        },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
         val uiState = viewModel.uiState.collectAsState().value
 
@@ -82,9 +89,13 @@ fun FlightSearchApp(
 }
 
 @Composable
-fun FlightSearchTopAppBar(modifier: Modifier = Modifier) {
+fun FlightSearchTopAppBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    modifier: Modifier = Modifier
+) {
     TopAppBar(
         title = { Text(stringResource(R.string.app_name)) },
+        scrollBehavior = scrollBehavior,
         modifier = modifier
     )
 }
