@@ -196,7 +196,8 @@ fun HomeScreen(
                         onClick = {
                             focusManager.clearFocus()
                             onSuggestionClick(it)
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -249,8 +250,8 @@ fun Suggestion(
 ) {
     Row(
         modifier = modifier
-            .padding(8.dp)
             .clickable { onClick() }
+            .padding(8.dp)
     ) {
         Text(
             text = airport.iataCode,
