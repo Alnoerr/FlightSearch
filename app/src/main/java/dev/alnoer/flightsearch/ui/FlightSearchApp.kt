@@ -47,8 +47,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.alnoer.flightsearch.R
-import dev.alnoer.flightsearch.data.Airport
-import dev.alnoer.flightsearch.data.Flight
+import dev.alnoer.flightsearch.model.Airport
+import dev.alnoer.flightsearch.model.Flight
 
 @Composable
 fun FlightSearchApp(

@@ -1,5 +1,9 @@
-package dev.alnoer.flightsearch.data
+package dev.alnoer.flightsearch.data.repository
 
+import dev.alnoer.flightsearch.data.dao.AirportDao
+import dev.alnoer.flightsearch.data.dao.FavoriteDao
+import dev.alnoer.flightsearch.model.Airport
+import dev.alnoer.flightsearch.model.Favorite
 import kotlinx.coroutines.flow.Flow
 
 class OfflineFlightSearchRepository(

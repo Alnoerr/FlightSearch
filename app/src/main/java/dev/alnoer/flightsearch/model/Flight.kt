@@ -1,4 +1,4 @@
-package dev.alnoer.flightsearch.data
+package dev.alnoer.flightsearch.model
 
 data class Flight(
     val departureAirport: Airport,

@@ -1,9 +1,8 @@
-package dev.alnoer.flightsearch.data
+package dev.alnoer.flightsearch.data.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
 import androidx.room.Query
+import dev.alnoer.flightsearch.model.Airport
 import kotlinx.coroutines.flow.Flow
 
 @Dao

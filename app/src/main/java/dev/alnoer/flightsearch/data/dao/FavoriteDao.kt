@@ -1,8 +1,9 @@
-package dev.alnoer.flightsearch.data
+package dev.alnoer.flightsearch.data.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import dev.alnoer.flightsearch.model.Favorite
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -1,4 +1,4 @@
-package dev.alnoer.flightsearch.data
+package dev.alnoer.flightsearch.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

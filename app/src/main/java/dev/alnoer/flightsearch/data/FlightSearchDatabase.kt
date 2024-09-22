@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import dev.alnoer.flightsearch.data.dao.AirportDao
+import dev.alnoer.flightsearch.data.dao.FavoriteDao
+import dev.alnoer.flightsearch.model.Airport
+import dev.alnoer.flightsearch.model.Favorite
 
 @Database(entities = [Airport::class, Favorite::class], version = 1, exportSchema = false)
 abstract class FlightSearchDatabase: RoomDatabase() {
@@ -18,7 +22,7 @@ abstract class FlightSearchDatabase: RoomDatabase() {
             // if the Instance is not null, return it, otherwise create a new database instance.
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, FlightSearchDatabase::class.java, "flight_search")
-                    .createFromAsset("databases/flight_search.db")
+                    .createFromAsset("database/flight_search.db")
                     .build()
                     .also { Instance = it }
             }

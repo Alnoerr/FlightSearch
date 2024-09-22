@@ -9,11 +9,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.alnoer.flightsearch.FlightSearchApplication
-import dev.alnoer.flightsearch.data.Airport
-import dev.alnoer.flightsearch.data.Flight
-import dev.alnoer.flightsearch.data.FlightSearchRepository
-import dev.alnoer.flightsearch.data.UserPreferencesRepository
-import dev.alnoer.flightsearch.data.toFavorite
+import dev.alnoer.flightsearch.model.Airport
+import dev.alnoer.flightsearch.model.Flight
+import dev.alnoer.flightsearch.data.repository.FlightSearchRepository
+import dev.alnoer.flightsearch.data.repository.UserPreferencesRepository
+import dev.alnoer.flightsearch.model.toFavorite
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
