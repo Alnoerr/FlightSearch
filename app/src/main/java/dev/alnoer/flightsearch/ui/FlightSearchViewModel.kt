@@ -83,14 +83,6 @@ class FlightSearchViewModel(
         }
     }
 
-    fun search() {
-        _uiState.update {
-            it.copy(
-                isShowingSuggestions = false
-            )
-        }
-    }
-
     fun autocomplete(airport: Airport) {
         _uiState.update {
             it.copy(

@@ -62,7 +62,7 @@ fun FlightSearchApp(
 
         HomeScreen(
             onValueChange = viewModel::setSearchText,
-            onSearch = viewModel::search,
+            onSearch = viewModel::autocomplete,
             onSuggestionClick = viewModel::autocomplete,
             onAddFavoriteClick = viewModel::addFavorite,
             onRemoveFavoriteClick = viewModel::removeFavorite,
@@ -89,7 +89,7 @@ fun FlightSearchTopAppBar(modifier: Modifier = Modifier) {
 @Composable
 fun HomeScreen(
     onValueChange: (TextFieldValue) -> Unit,
-    onSearch: () -> Unit,
+    onSearch: (Airport) -> Unit,
     onSuggestionClick: (Airport) -> Unit,
     onAddFavoriteClick: (Flight) -> Unit,
     onRemoveFavoriteClick: (Flight) -> Unit,
@@ -131,8 +131,14 @@ fun HomeScreen(
             ),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    focusManager.clearFocus()
-                    onSearch()
+                    if (uiState.textFieldValue.text.isNotEmpty()) {
+                        if (suggestionsList.isNotEmpty()) {
+                            focusManager.clearFocus()
+                            onSearch(suggestionsList.first())
+                        }
+                    } else {
+                        focusManager.clearFocus()
+                    }
                 }
             ),
             placeholder = { Text(stringResource(R.string.enter_departure_airport)) },
