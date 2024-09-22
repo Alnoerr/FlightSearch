@@ -128,7 +128,7 @@ class FlightSearchViewModel(
                 val application = (this[APPLICATION_KEY] as FlightSearchApplication)
                 FlightSearchViewModel(
                     flightSearchRepository = application.container.flightSearchRepository,
-                    userPreferencesRepository = application.userPreferencesRepository
+                    userPreferencesRepository = application.container.userPreferencesRepository
                 )
             }
         }
