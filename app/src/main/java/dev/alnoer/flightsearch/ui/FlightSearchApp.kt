@@ -20,12 +20,14 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -38,67 +40,50 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import dev.alnoer.flightsearch.R
 import dev.alnoer.flightsearch.data.Airport
 import dev.alnoer.flightsearch.data.Flight
-
-enum class FlightSearchApp {
-    HomeScreen,
-    DetailsScreen
-}
 
 @Composable
 fun FlightSearchApp(
     viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.Factory)
 ) {
-    val navController = rememberNavController()
+    Scaffold(
+        topBar = { FlightSearchTopAppBar() }
+    ) { innerPadding ->
+        val uiState = viewModel.uiState.collectAsState().value
 
-    Scaffold { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = FlightSearchApp.HomeScreen.name,
-        ) {
-            composable(FlightSearchApp.HomeScreen.name) {
-                val uiState = viewModel.uiState.collectAsState().value
+        val allFlightsList = viewModel.allFlightsList.collectAsState().value
+        val suggestionsList =
+            viewModel.getSuggestions(uiState.textFieldValue.text).collectAsState(
+                emptyList()
+            ).value
+        val favoritesList = viewModel.favoritesList.collectAsState().value
 
-                val allFlightsList = viewModel.allFlightsList.collectAsState().value
-                val suggestionsList =
-                    viewModel.getSuggestions(uiState.textFieldValue.text).collectAsState(
-                        emptyList()
-                    ).value
-                val favoritesList = viewModel.favoritesList.collectAsState().value
-
-                HomeScreen(
-                    onValueChange = viewModel::setSearchText,
-                    onSearch = viewModel::search,
-                    onSuggestionClick = viewModel::autocomplete,
-                    onFlightClick = {  },
-                    onAddFavoriteClick = viewModel::addFavorite,
-                    onRemoveFavoriteClick = viewModel::removeFavorite,
-                    uiState = uiState,
-                    allFlightsList = allFlightsList,
-                    suggestionsList = suggestionsList,
-                    favoritesList = favoritesList,
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                )
-            }
-
-            val flightSearchArgument = "flightRoute"
-            composable(
-                route = FlightSearchApp.DetailsScreen.name + "/{$flightSearchArgument}",
-                arguments = listOf(navArgument(flightSearchArgument) { type = NavType.StringType })
-            ) {
-                //TODO
-            }
-        }
+        HomeScreen(
+            onValueChange = viewModel::setSearchText,
+            onSearch = viewModel::search,
+            onSuggestionClick = viewModel::autocomplete,
+            onAddFavoriteClick = viewModel::addFavorite,
+            onRemoveFavoriteClick = viewModel::removeFavorite,
+            uiState = uiState,
+            allFlightsList = allFlightsList,
+            suggestionsList = suggestionsList,
+            favoritesList = favoritesList,
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FlightSearchTopAppBar(modifier: Modifier = Modifier) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.app_name)) },
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -106,7 +91,6 @@ fun HomeScreen(
     onValueChange: (TextFieldValue) -> Unit,
     onSearch: () -> Unit,
     onSuggestionClick: (Airport) -> Unit,
-    onFlightClick: (Flight) -> Unit,
     onAddFavoriteClick: (Flight) -> Unit,
     onRemoveFavoriteClick: (Flight) -> Unit,
     uiState: FlightSearchUiState,
@@ -164,7 +148,6 @@ fun HomeScreen(
                 items(favoritesList) {
                     FlightCard(
                         flight = it,
-                        onClick = {},
                         onFavoriteClick = onRemoveFavoriteClick,
                         modifier = Modifier.padding(4.dp)
                     )
@@ -210,7 +193,6 @@ fun HomeScreen(
                             )
                             FlightCard(
                                 flight = flight,
-                                onClick = { onFlightClick(flight) },
                                 onFavoriteClick = {
                                     if (flight.isFavorite) {
                                         onRemoveFavoriteClick(flight)
@@ -255,14 +237,10 @@ fun Suggestion(
 @Composable
 fun FlightCard(
     flight: Flight,
-    onClick: () -> Unit,
     onFavoriteClick: (Flight) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        onClick = onClick,
-        modifier = modifier
-    ) {
+    Card(modifier = modifier) {
         Row(modifier = Modifier.padding(8.dp)) {
             Column(modifier = Modifier.weight(1.0f)) {
                 FlightPoint(
