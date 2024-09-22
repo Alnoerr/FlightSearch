@@ -196,7 +196,13 @@ fun HomeScreen(
                             FlightCard(
                                 flight = flight,
                                 onClick = { onFlightClick(flight) },
-                                onFavoriteClick = onAddFavoriteClick,
+                                onFavoriteClick = {
+                                    if (flight.isFavorite) {
+                                        onRemoveFavoriteClick(flight)
+                                    } else {
+                                        onAddFavoriteClick(flight)
+                                    }
+                                },
                                 modifier = Modifier.padding(4.dp)
                             )
                         }
