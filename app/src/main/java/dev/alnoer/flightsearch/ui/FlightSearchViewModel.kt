@@ -81,6 +81,11 @@ class FlightSearchViewModel(
                 textFieldValue = textFieldValue
             )
         }
+        if (textFieldValue.text.isEmpty()) {
+            viewModelScope.launch {
+                userPreferencesRepository.saveSearchQuery("")
+            }
+        }
     }
 
     fun autocomplete(airport: Airport) {
