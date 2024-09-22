@@ -165,11 +165,16 @@ fun HomeScreen(
             LazyColumn(
                 contentPadding = PaddingValues(8.dp)
             ) {
-                items(favoritesList) {
+                items(
+                    favoritesList,
+                    key = { it.departureAirport.iataCode + it.destinationAirport.iataCode }
+                ) {
                     FlightCard(
                         flight = it,
                         onFavoriteClick = onRemoveFavoriteClick,
-                        modifier = Modifier.padding(4.dp)
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .animateItem()
                     )
                 }
             }
