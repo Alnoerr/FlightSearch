@@ -4,6 +4,7 @@ package dev.alnoer.flightsearch.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -168,21 +169,34 @@ fun HomeScreen(
                 .fillMaxWidth()
         )
         AnimatedVisibility(uiState.textFieldValue.text.isEmpty()) {
-            LazyColumn(
-                contentPadding = PaddingValues(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(
-                    favoritesList,
-                    key = { it.departureAirport.iataCode + it.destinationAirport.iataCode }
+            if (favoritesList.isEmpty()) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    FlightCard(
-                        flight = it,
-                        onFavoriteClick = onRemoveFavoriteClick,
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .animateItem()
+                    Text(
+                        text = stringResource(R.string.no_favorites),
+                        style = MaterialTheme.typography.headlineMedium
                     )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(8.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        favoritesList,
+                        key = { it.departureAirport.iataCode + it.destinationAirport.iataCode }
+                    ) {
+                        FlightCard(
+                            flight = it,
+                            onFavoriteClick = onRemoveFavoriteClick,
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .animateItem()
+                        )
+                    }
                 }
             }
         }
