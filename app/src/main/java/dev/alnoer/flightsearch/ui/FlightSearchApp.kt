@@ -169,7 +169,8 @@ fun HomeScreen(
         )
         AnimatedVisibility(uiState.textFieldValue.text.isEmpty()) {
             LazyColumn(
-                contentPadding = PaddingValues(8.dp)
+                contentPadding = PaddingValues(8.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(
                     favoritesList,
@@ -186,7 +187,7 @@ fun HomeScreen(
             }
         }
         AnimatedVisibility(uiState.isShowingSuggestions && uiState.textFieldValue.text.isNotEmpty()) {
-            LazyColumn {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(
                     items = suggestionsList,
                     key = { it.id }
@@ -204,7 +205,8 @@ fun HomeScreen(
         }
         AnimatedVisibility(!uiState.isShowingSuggestions) {
             LazyColumn(
-                contentPadding = PaddingValues(8.dp)
+                contentPadding = PaddingValues(8.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 if (uiState.currentAirport != null) {
                     items(
