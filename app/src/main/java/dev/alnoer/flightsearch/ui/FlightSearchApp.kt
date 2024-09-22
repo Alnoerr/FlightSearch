@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package dev.alnoer.flightsearch.ui
 
 import androidx.compose.animation.AnimatedVisibility
@@ -49,7 +51,9 @@ fun FlightSearchApp(
     viewModel: FlightSearchViewModel = viewModel(factory = FlightSearchViewModel.Factory)
 ) {
     Scaffold(
-        topBar = { FlightSearchTopAppBar() }
+        topBar = {
+            FlightSearchTopAppBar()
+        }
     ) { innerPadding ->
         val uiState = viewModel.uiState.collectAsState().value
 
@@ -77,7 +81,6 @@ fun FlightSearchApp(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlightSearchTopAppBar(modifier: Modifier = Modifier) {
     TopAppBar(
