@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
@@ -126,6 +127,20 @@ fun HomeScreen(
                     imageVector = Icons.Default.Search,
                     contentDescription = null
                 )
+            },
+            trailingIcon = {
+                if (uiState.textFieldValue.text.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            onValueChange(TextFieldValue())
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = stringResource(R.string.clear)
+                        )
+                    }
+                }
             },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Search
